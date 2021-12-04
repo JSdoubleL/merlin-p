@@ -752,7 +752,7 @@ MetaLearner::start_gradualMBIncrease(int f)
 	currFold=f;
 	sprintf(foldoutDirName,"%s/fold%d",outLocMap.begin()->second.c_str(),f);
 	int maxMBSizeApprox=maxFactorSizeApprox-1;
-	int currK=maxMBSizeApprox;
+	int currK=maxMBSizeApprox; // Why would you name it currK is its the max and doesn't change? WHY!!! I need answers!
 	rnd=gsl_rng_alloc(gsl_rng_default);
 	int rseed=getpid();
 	gsl_rng_set(rnd,rseed);
@@ -873,6 +873,7 @@ MetaLearner::start_gradualMBIncrease(int f)
 				}
 				iter++;
 				scorePremodule=currGlobalScore;
+				cout <<"Iter " << iter << endl;
 				dumpAllGraphs(currK,f,iter);
 			}
 			moduleiter++;
@@ -2514,7 +2515,7 @@ MetaLearner::dumpAllGraphs(int currK,int foldid,int iter)
 	{
 		string& dirname=outLocMap[eIter->first];
 		//sprintf(aFName,"%s/var_mb_pw_k%d.txt",foldoutDirName,currK,iter);
-		sprintf(aFName,"%s/prediction_k%d.txt",foldoutDirName,currK+1);
+		sprintf(aFName,"%s/prediction_k%d_%d.txt",foldoutDirName,currK+1,iter);
 		ofstream oFile(aFName);
 		//sprintf(aFName,"%s/bias.txt",foldoutDirName,currK);
 		//ofstream bFile(aFName);
@@ -2540,7 +2541,7 @@ MetaLearner::dumpAllGraphs(int currK,int foldid,int iter)
 			char aFName[1024];
 			string& dirname=outLocMap.begin()->second;
 			//sprintf(aFName,"%s/fold%d/shared_mb_pw_k%d.txt",dirname.c_str(),foldid,currK);
-			sprintf(aFName,"%s/fold%d/shared_mb_pw_k%d.txt",dirname.c_str(),foldid,currK+1);
+			sprintf(aFName,"%s/fold%d/shared_mb_pw_k%d_%d.txt",dirname.c_str(),foldid,currK+1,iter);
 			ofstream oFile(aFName);
 			FactorGraph* fg=gIter->second;
 			fg->dumpVarMB_PairwiseFormat(oFile,varSet);
