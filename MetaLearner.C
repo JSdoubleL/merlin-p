@@ -875,6 +875,10 @@ MetaLearner::start_gradualMBIncrease(int f)
 				scorePremodule=currGlobalScore;
 				cout <<"Iter " << iter << endl;
 				dumpAllGraphs(currK,f,iter);
+				sprintf(currModuleFName,"%s/modules_%d.txt",foldoutDirName,currFold,iter);
+				sprintf(inGraphFName,"%s/prediction_k%d_%d.txt",foldoutDirName,currK+1,iter);
+				SYSCAL(ERROR,LOG,"python3 %s -i %s -o %s",SCRIPT,inGraphFName,currModuleFName); // run python script			
+				readModuleMembership(currModuleFName);
 			}
 			moduleiter++;
 		}
