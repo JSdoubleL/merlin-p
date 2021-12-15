@@ -870,15 +870,17 @@ MetaLearner::start_gradualMBIncrease(int f)
 				else
 				{
 					redefineModules_Global();
+					//dumpAllGraphs(currK,f,iter);
+					//sprintf(currModuleFName,"%s/modules_%d.txt",foldoutDirName,currFold,iter);
+ 					//sprintf(inGraphFName,"%s/prediction_k%d_%d.txt",foldoutDirName,currK+1,iter);
+					//SYSCAL(ERROR,LOG,"python3 %s -i %s -o %s",SCRIPT,inGraphFName,currModuleFName); // run python script			
+					//readModuleMembership(currModuleFName);
 				}
 				iter++;
 				scorePremodule=currGlobalScore;
 				cout <<"Iter " << iter << endl;
 				dumpAllGraphs(currK,f,iter);
-				sprintf(currModuleFName,"%s/modules_%d.txt",foldoutDirName,currFold,iter);
-				sprintf(inGraphFName,"%s/prediction_k%d_%d.txt",foldoutDirName,currK+1,iter);
-				SYSCAL(ERROR,LOG,"python3 %s -i %s -o %s",SCRIPT,inGraphFName,currModuleFName); // run python script			
-				readModuleMembership(currModuleFName);
+
 			}
 			moduleiter++;
 		}
@@ -1213,15 +1215,16 @@ MetaLearner::initEdgeSet(bool validation)
 				continue;
 			}
 			Variable* v=varSet[vIter->first];
-			if(geneModuleID.find(v->getName())==geneModuleID.end())
-			{	
-				continue;
-			}
+			//if(geneModuleID.find(v->getName())==geneModuleID.end())
+			//{	
+			//	continue;
+			//}
 			string edgeKey;
 			//This is going to be a directed graph
 			edgeKey.append(u->getName().c_str());
 			edgeKey.append("\t");
 			edgeKey.append(v->getName().c_str());
+            //cout << "ellie uncommented" << edgeKey << endl;
 			if(strcmp(edgeKey.c_str(),"FBgn0013263\tFBgn0004170")==0)
 			{
 				cout <<"Stop here" << endl;
@@ -1658,7 +1661,7 @@ MetaLearner::collectMoves(int currK)
 			//Generate next condition assignments
 			if(edgeConditionMap.find(edgeKey)==edgeConditionMap.end())
 			{
-				cout <<"No edge " << edgeKey.c_str() << " u " << u->getID() << " v " << v->getID()<< endl;
+				cout <<"CollectMoves No edge " << edgeKey.c_str() << " u " << u->getID() << " v " << v->getID()<< endl;
 				exit(0);
 			}
 			INTINTMAP* conditionSet=edgeConditionMap[edgeKey];
@@ -3123,7 +3126,7 @@ MetaLearner::redefineModules_Global()
 	HierarchicalCluster hc;
 	hc.setOutputDir(foldoutDirName);
 	hc.setVariableManager(varManager);
-	hc.cluster(newModules,nodeSet,clusterThreshold);
+	hc.cluster_ikc(newModules,nodeSet,clusterThreshold);
 	moduleGeneSet.clear();
 	geneModuleID.clear();
 	regulatorModuleOutdegree.clear();

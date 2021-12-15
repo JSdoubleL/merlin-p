@@ -108,6 +108,125 @@ HierarchicalCluster::cluster(map<int,map<string,int>*>& modules,map<string,Hiera
 	return 0;
 }
 
+
+
+int 
+HierarchicalCluster::cluster_ikc(map<int,map<string,int>*>& modules,map<string,HierarchicalClusterNode*>& attribs,double t)
+{
+	threshold=t;
+	map<int,HierarchicalClusterNode*> attribs_integer;
+	globalNodeID=0;
+	for(map<string,HierarchicalClusterNode*>::iterator nIter=attribs.begin();nIter!=attribs.end();nIter++)
+	{
+		attribs_integer[globalNodeID]=nIter->second;
+		nIter->second->id=globalNodeID;
+		globalNodeID++;
+	}
+	estimatePairwiseDist(attribs_integer);
+
+	
+	char outFName[1024];
+	sprintf(outFName,"%s/dist_matrix.txt",outputDir);
+	ofstream oFile(outFName);
+
+	HierarchicalCluster::Pair* p=myqueue.top();
+	while(!myqueue.empty())
+	{
+		if(p->value<threshold)
+		//Keep popping until we reach a pair whose both members have not been visited
+		{
+			oFile << attribs_integer[p->node1]->nodeName << "\t" <<attribs_integer[p->node2]->nodeName <<"\t"<< p->value << endl;
+		}
+		delete p;
+		myqueue.pop();
+		p=myqueue.top();
+	}
+	oFile.close();
+
+	
+	sprintf(currModuleFName,"%s/modules_ikc.txt",outputDir);
+	SYSCAL(ERROR,LOG,"python3 %s -i %s -o %s",SCRIPT,outFName,currModuleFName); // run python script
+	read_ikc_modules(currModuleFName, modules);
+    cout << "here" << endl;
+	
+	for(map<string,HierarchicalClusterNode*>::iterator aIter=backup.begin();aIter!=backup.end();aIter++)
+	{
+		map<string,HierarchicalClusterNode*>::iterator cIter=attribs.find(aIter->first);
+		if(cIter!=attribs.end())
+		{
+			attribs.erase(cIter);
+		}
+		delete aIter->second;
+	}
+	for(map<string,HierarchicalClusterNode*>::iterator aIter=attribs.begin();aIter!=attribs.end();aIter++)
+	{
+		delete aIter->second;
+	}
+	for(map<int,HierarchicalClusterNode*>::iterator aIter=attribs_integer.begin();aIter!=attribs_integer.end();aIter++)
+	{
+	//	delete aIter->second;
+	}
+	attribs_integer.clear();
+	delete [] visited;
+	for(int i=0;i<treenodecnt;i++)
+	{
+		delete [] distvalues[i];
+	}
+	delete [] distvalues;
+	attribs.clear();
+	backup.clear();
+	
+	return 0;
+}
+
+int 
+HierarchicalCluster::read_ikc_modules(string currModuleFName,map<int,map<string,int>*>& modules)
+{
+
+	ifstream inFile(currModuleFName);
+	char buffer[1024];
+	while(inFile.good())
+	{
+		inFile.getline(buffer,1023);
+		if(strlen(buffer)<=0)
+		{
+			continue;
+		}
+		string geneName;
+		int moduleID;
+		int tokCnt=0;
+		char* tok=strtok(buffer,"\t");
+		while(tok!=NULL)
+		{
+			if(tokCnt==0)
+			{
+				geneName.append(tok);
+			}
+			else if(tokCnt==1)
+			{
+				moduleID=atoi(tok);
+			}
+			tok=strtok(NULL,"\t");
+			tokCnt++;
+		}
+		map<string,int>* geneSet=NULL;
+		if(modules.find(moduleID)==modules.end())
+		{
+			geneSet=new map<string,int>;
+			modules[moduleID]=geneSet;
+		}
+		else
+		{
+			geneSet=modules[moduleID];
+		}
+		(*geneSet)[geneName]=0;
+	}
+	inFile.close();
+
+	int moduleCnt=modules.size();
+	return 0;
+}
+
 int
 HierarchicalCluster::estimatePairwiseDist(map<int,HierarchicalClusterNode*>& currNodeSet)
 {
@@ -160,7 +279,7 @@ HierarchicalCluster::estimatePairwiseDist(map<int,HierarchicalClusterNode*>& cur
 				den2=den2+fabs(aIter->second);
 			}
 			rdist=1- (((double)sharedSign)/((double)(den1+den2-sharedSign)));
-			double dist=(ccdist+rdist)/2;
+			double dist=(ccdist++)/2;
 			distvalues[i][j]=dist;
 			distvalues[j][i]=dist;
 			HierarchicalCluster::Pair* p=new HierarchicalCluster::Pair;
@@ -313,6 +432,23 @@ HierarchicalCluster::generateModules(map<int,HierarchicalClusterNode*>& currNode
 		moduleCnt=moduleCnt+1;
 	}
 	//oFile << endl;
+	return 0;
+}
+
+int
+HierarchicalCluster::generateModules_ikc(map<int,HierarchicalClusterNode*>& currNodeSet,map<int,map<string,int>*>& modules,map<string,HierarchicalClusterNode*>& origAttrib)
+{
+	int moduleCnt=modules.size();
+	for(map<int,HierarchicalClusterNode*>::iterator cIter=currNodeSet.begin();cIter!=currNodeSet.end();cIter++)
+	{
+		HierarchicalClusterNode* node=cIter->second;
+		map<string,int>* moduleMembers=new map<string,int>;
+		modules[moduleCnt]=moduleMembers;
+		populateMembers(moduleMembers,node);
+		cout <<"Module: " << moduleCnt << "\tSize="<< moduleMembers->size() << endl;
+	
+		moduleCnt=moduleCnt+1;
+	}
 	return 0;
 }
 

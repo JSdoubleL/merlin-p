@@ -1,10 +1,10 @@
 #ifndef _META_LEARNER_
 #define _META_LEARNER_
-
+/*
 // Thing for running the python script (copied from Constrained-INC github)
 #define ERROR -1
 #define SUCCESS1 0 
-static const char SCRIPT[] = "testscript.py ";
+static const char SCRIPT[] = "IKC.py ";
 static const char LOG[] = "Script failed to run...\n";
 #define PRINT_AND_RETURN(p, r)\
     do{\
@@ -16,7 +16,7 @@ static const char LOG[] = "Script failed to run...\n";
       sprintf(sys_buffer, format, __VA_ARGS__);\
       if(system(sys_buffer) != SUCCESS1) PRINT_AND_RETURN(log, err_val);\
     } while(0)
-
+*/
 #include <map>
 #include "CommonTypes.H"
 using namespace std;
