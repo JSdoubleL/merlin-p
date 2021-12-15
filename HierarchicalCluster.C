@@ -279,7 +279,7 @@ HierarchicalCluster::estimatePairwiseDist(map<int,HierarchicalClusterNode*>& cur
 				den2=den2+fabs(aIter->second);
 			}
 			rdist=1- (((double)sharedSign)/((double)(den1+den2-sharedSign)));
-			double dist=(ccdist++)/2;
+			double dist=(ccdist+rdist)/2;
 			distvalues[i][j]=dist;
 			distvalues[j][i]=dist;
 			HierarchicalCluster::Pair* p=new HierarchicalCluster::Pair;
